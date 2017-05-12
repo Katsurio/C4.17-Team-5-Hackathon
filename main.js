@@ -53,7 +53,17 @@ var globalResult,
     {"id": 37, "name": "Western"}
 ],
 // Youtube API variables
-    player;
+    player,
+// Mood select check variables
+    _1stClicked = null,
+    _2ndClicked = null,
+//Google Places API ariables
+    userLocation = null,
+    emotionKeyword = '',
+    userLongLat = null,
+    restaurantLoopList = null,
+    restaurantFinalId = null,
+    restaurantResults = [];
 
 /**
  * @function - Initiates an AJAX call to CocktailDB for a random drink
@@ -184,13 +194,14 @@ function appendMedia () {
         mediaDiv = $('<div>').append(mediaDivArr);
     $('.mediaModalBody').append(mediaDiv);
     $('.trailerBtn').click(showAndPlayYtVid);
+
     // $('#mediaModal .close').on('click', function () {
     //     $('#pug').addClass('tada');
     // });
 }
 
 /**
- * @function - Automatically invoked by YT API. Acts as a callback for when the YT iFrame's ready.
+ * @function - Automagically invoked by YT API. Acts as a callback for when the YT iFrame's ready.
  * @name - attachDrinkToDom
  */
 function onYouTubeIframeAPIReady()
@@ -199,7 +210,7 @@ function onYouTubeIframeAPIReady()
         height: '390',
         width: '640',
         // Set the id of the video to be played
-        videoId: 'OpLK_7OL-LE',
+        videoId: 'Pukw8Ovl6Tc',
         // Setup event handlers
         events: {
             'onError': onError
@@ -225,12 +236,11 @@ function onError(error)
 function showAndPlayYtVid()
 {
     $(mediaDiv).empty();
+    console.log("Line 206: function showAndPlayYtVid() invoked");
     $('.yt-player-container').toggleClass('hidden_vid');
     player.loadVideoById(mediaIDVideo);
 }
-function removeMediaIDVideo() {
-      player.stopVideo();
-}
+
 /**
  * @function - Creates DOM elements and attaches the information pulled from CocktailDB to them
  * @name - attachDrinkToDom
@@ -240,9 +250,9 @@ function attachDrinkToDom() {
     var drinkImageImg = $('<img>').attr('src', drinkImage).css({'height': '35vmin', 'width': '35vmin'}),
         captionDiv = $('<div>').addClass('caption'),
         drinkNameH3 = $('<h3>').text(drinkName),
-        howToMakeH3 = $('<h4>').text('How to make the drink:').css({'line-height': '3', 'font-weight': '500'}),
+        howToMakeH3 = $('<h3>').text('How to make the drink:').css({'line-height': '3', 'font-weight': '500'}),
         drinkInstructionsH4 = $('<h4>').text(instructions),
-        drinkIngredientsH3 = $('<p>').text('What you\'ll need:').css({'line-height': '3', 'font-weight': '500'});
+        drinkIngredientsH3 = $('<h3>').text('What you\'ll need:').css({'line-height': '3', 'font-weight': '500'});
     $('#drinkModalInfoDiv').append(drinkImageImg, captionDiv, drinkNameH3, howToMakeH3, drinkInstructionsH4, drinkIngredientsH3);
 
     for(var i = 0; i < drinkIngredients.length; i++) {
@@ -296,7 +306,156 @@ function selectMoodClickHandler ()
     $('.mood-group-container label').click(function(){
         $(this).addClass('selected').siblings().removeClass('selected');
     });
-    $("#google-icon").show();
+}
+
+/**
+ * @function - Pulls data from the Emoji modal to pass into the Google Places query string
+ * @name - foodTypePicker
+ */
+function foodTypePicker() {
+    var pugtato = $("label[class=selected]")[0].htmlFor;
+    switch(pugtato)
+    {
+        case 'Happy':
+            emotionKeyword = 'mexican';
+            break;
+        case 'Sad':
+            emotionKeyword = 'chinese';
+            break;
+        case 'Angry':
+            emotionKeyword = 'thai';
+            break;
+        case 'Poo':
+            emotionKeyword = 'fast food';
+            break;
+        case 'Tired':
+            emotionKeyword = 'pizza';
+            break;
+        case 'Unicorny':
+            emotionKeyword = 'italian';
+            break;
+        case 'Goofy':
+            emotionKeyword = 'desserts';
+            break;
+        case 'Scared':
+            emotionKeyword = 'korean';
+            break;
+        default:
+            emotionKeyword = '';
+            break;
+    }
+}
+
+/**
+ * @function - Initiates a series of AJAX calls to Google Places for the top three restaurant around the user that is currently open and delivers
+ * @name - restaurantAjaxCall
+ */
+function restaurantAjaxCall() {
+    var userLongLatUrl = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + userLocation + '&key=' + apiKeys.googlePlace;
+    $.ajax({
+        dataType: 'json',
+        url: userLongLatUrl,
+        api_key: apiKeys.googlePlace,
+        type: 'get',
+        success:
+            function(result) {
+            console.log('LongLat Success!!!');
+            foodTypePicker();
+            userLongLat = result.results[0].geometry.location.lat + "," + result.results[0].geometry.location.lng;
+            var newGooglePlacesUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + userLongLat + '&radius=3000&opennow&keyword=restaurant, ' + emotionKeyword + ', delivery, takeout&key=' + apiKeys.googlePlace;
+            $.ajax({
+                dataType: 'json',
+                url: newGooglePlacesUrl,
+                api_key: apiKeys.googlePlace,
+                type: 'get',
+                success: function(result) {
+                    console.log('Google Places Success!!!');
+                    restaurantLoopList = result;
+                    for(var i = 0; i < 3; i++) {
+                        var googlePlaceId = restaurantLoopList.results[i].place_id;
+                        var newGooglePlaceId = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + googlePlaceId + '&key=' + apiKeys.googlePlace;
+                        $.ajax({
+                            dataType: 'json',
+                            url: newGooglePlaceId,
+                            api_key: apiKeys.googlePlace,
+                            type: 'get',
+                            success: function(result) {
+                                restaurantFinalId = result;
+                                var restaurantInfo = {
+                                    name: restaurantFinalId.result.name,
+                                    address: restaurantFinalId.result.formatted_address,
+                                    phone: restaurantFinalId.result.formatted_phone_number,
+                                    link: restaurantFinalId.result.url
+                                };
+                                restaurantResults.push(restaurantInfo);
+                                console.log('Google PlaceID Success!');
+                                attachRestaurantsToDom();
+                            },
+                            error: function() {
+                                console.log('Google PlaceID fail')
+                            }
+                        })
+                    }
+                },
+                error: function() {
+                    console.log('Google Fail')
+                }
+            });
+        },
+        error: function() {
+            console.log('LongLat Fail!!!');
+        }
+    });
+}
+
+/**
+ * @function - Creates DOM elements and attaches the information pulled from Google Places to them
+ * @name - attachRestaurantsToDom
+ */
+function attachRestaurantsToDom() {
+    var restaurantNameH3 = $('<h3>').text(restaurantResults[restaurantResults.length-1].name),
+        restaurantAddressH3 = $('<h3>').text(restaurantResults[restaurantResults.length-1].address),
+        restaurantPhoneH3 = $('<h3>').text(restaurantResults[restaurantResults.length-1].phone),
+        restaurantLinkAnchor = $('<a>').attr({'href': restaurantResults[restaurantResults.length-1].link, 'target': '_blank'}),
+        restaurantLinkImg = $('<img src="images/googleMaps.png">').css({'height': '10vmin','width': '10vmin'});
+
+    $('#foodModalInfoDiv').append(restaurantNameH3, restaurantAddressH3, restaurantPhoneH3, restaurantLinkAnchor);
+    $(restaurantLinkAnchor).append(restaurantLinkImg);
+}
+
+//TODO: Finish JSDoc
+/**
+ * @function -
+ * @name - locationSubmitBtn
+ */
+function locationSubmitBtn() {
+    $('#locationSubmitBtn').on('click', function() {
+        userLocation = $('#locationInput').val();
+        console.log(userLocation);
+        if(userLocation === "dandalf") {
+            window.open("https://www.youtube.com/watch?v=ZRJfrwnvbCs");
+            $('#locationInput').val('');
+            return;
+        }
+        restaurantAjaxCall();
+        $('#locationInput').val('');
+    });
+    $('#locationInput').on('keypress', function(e) {
+        var keyPressed = e.charCode;
+        if(keyPressed === 13) {
+            e.preventDefault();
+            userLocation = $('#locationInput').val();
+            if(userLocation === "dandalf") {
+                window.open("https://www.youtube.com/watch?v=ZRJfrwnvbCs");
+                $('#locationInput').val('');
+                return;
+            }
+            $('#foodModalInfoDiv > h3').empty();
+            $('#foodModalInfoDiv > a').empty();
+            restaurantAjaxCall();
+            $('#locationInput').val('');
+        }
+    });
 }
 
 function resetApp() {
@@ -334,24 +493,23 @@ function applyClickHandlers()
     $('.mood-group-container label').click(selectMoodClickHandler);
     $('.submitBtn').click(moodSubmitClick).click(popupClickHandler);
     $('#pug').on('click', popupClickHandler);
-
-    resetApp();
-    $('#dratini-glass').on('click', function() {
-        $('#drinkModal').modal('show');
+    $('#google-icon').on('click', function() {
+        $('#foodModal').modal('show');
     });
 
     $('#mediaModal').on('hidden.bs.modal', function () {
-        mediaDivArr= [];
-        mediaIDVideo = "";
-        $('.yt-player-container').toggleClass('hidden_vid');
-        console.log('mediaModal');
-        removeMediaIDVideo();
+        $("#mediaModalBody").empty();
     });
-    $('#mood-container').on('hidden.bs.modal', function () {
-        $("label").removeClass('selected');
-    });
+    // $('#mood-container').on('hidden.bs.modal', function () {
+    //     $("").removeClass('selected');
+    // });
+
     resetApp();
+    // $('#google-icon').on('click', function() {
+    //     $('#drinkModal').modal('show');
+    // });
     drinkAjaxCall();
+
 }
 
 $(document).ready(applyClickHandlers);
