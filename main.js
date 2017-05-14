@@ -72,7 +72,7 @@ function drinkAjaxCall() {
         url: 'https://www.thecocktaildb.com/api/json/v1/' + apiKeys.cocktailDb + '/random.php',
         type: 'get',
         success: function(result) {
-            console.log('CocktailDB AJAX Call Success!!!');
+            // console.log('CocktailDB AJAX Call Success!!!');
             globalResult = result;
             drinkName = globalResult.drinks[0].strDrink;
             instructions = globalResult.drinks[0].strInstructions;
@@ -89,14 +89,14 @@ function drinkAjaxCall() {
                     ingredientMeasures.push(globalResult.drinks[0][measure]);
                 }
             }
-            console.log('DRINK NAME: ' +  drinkName + ' INSTRUCTIONS: ' + instructions + ' DRINK IMAGE: ' + drinkImage + ' DRINK INGREDIENTS: ' + drinkIngredients + ' INGREDIENT MEASURES: ' + ingredientMeasures);
+            // console.log('DRINK NAME: ' +  drinkName + ' INSTRUCTIONS: ' + instructions + ' DRINK IMAGE: ' + drinkImage + ' DRINK INGREDIENTS: ' + drinkIngredients + ' INGREDIENT MEASURES: ' + ingredientMeasures);
             attachDrinkToDom();
         }
     });
 }
 
 
-/** TODO: Finish JSDoc
+/**
  * @function - Checks the input value on submit from the mood select modal
  * @name - mediaMood
  */
@@ -222,7 +222,7 @@ function onYouTubeIframeAPIReady()
 function onError(error)
 {
     // Update errors on page
-    console.log('ERROR: ' + error);
+    // console.log('ERROR: ' + error);
 }
 
 /**
@@ -353,7 +353,7 @@ function restaurantAjaxCall() {
         api_key: apiKeys.googlePlace,
         type: 'get',
         success: function(result) {
-            console.log('LongLat Success!!!');
+            // console.log('LongLat Success!!!');
             foodTypePicker();
             userLongLat = result.results[0].geometry.location.lat + "," + result.results[0].geometry.location.lng;
             var newGooglePlacesUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + userLongLat + '&radius=3000&opennow&keyword=restaurant, ' + emotionKeyword + ', delivery, takeout&key=' + apiKeys.googlePlace;
@@ -363,7 +363,7 @@ function restaurantAjaxCall() {
                 api_key: apiKeys.googlePlace,
                 type: 'get',
                 success: function(result) {
-                    console.log('Google Places Success!!!');
+                    // console.log('Google Places Success!!!');
                     restaurantLoopList = result;
                     for(var i = 0; i < 3; i++) {
                         var googlePlaceId = restaurantLoopList.results[i].place_id;
@@ -382,7 +382,7 @@ function restaurantAjaxCall() {
                                     link: restaurantFinalId.result.url
                                 };
                                 restaurantResults.push(restaurantInfo);
-                                console.log('Google PlaceID Success!');
+                                // console.log('Google PlaceID Success!');
                                 attachRestaurantsToDom();
                             },
                             error: function() {
@@ -392,12 +392,12 @@ function restaurantAjaxCall() {
                     }
                 },
                 error: function() {
-                    console.log('Google Fail')
+                    // console.log('Google Fail')
                 }
             });
         },
         error: function() {
-            console.log('LongLat Fail!!!');
+            // console.log('LongLat Fail!!!');
         }
     });
 }
@@ -422,7 +422,7 @@ function attachRestaurantsToDom() {
 function locationSubmitBtn() {
     $('#locationSubmitBtn').on('click', function() {
         userLocation = $('#locationInput').val();
-        console.log(userLocation);
+        // console.log(userLocation);
         if(userLocation === "dandalf") {
             window.open("https://www.youtube.com/watch?v=ZRJfrwnvbCs");
             $('#locationInput').val('');
