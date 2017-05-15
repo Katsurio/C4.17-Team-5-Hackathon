@@ -96,8 +96,8 @@ function drinkAjaxCall() {
 }
 
 
-/** TODO: Finish JSDoc
- * @function - Checks the input value on submit from the mood select modal
+/**
+ * @function - switch statement that checks the input value on submit from the mood select modal, and sets the mood variable to a numeric value
  * @name - mediaMood
  */
 function mediaMood() {
@@ -301,7 +301,6 @@ function createModalFormButtons ()
 function selectMoodClickHandler ()
 {
     $(this).addClass('selected').siblings().removeClass('selected');
-    $("#google-icon").show();
 }
 
 /*
@@ -480,6 +479,7 @@ function applyClickHandlers()
     $("#myModal").modal('show');
     createModalFormButtons();
     // locationSubmitBtn();
+
     $('.mood-group-container label').click(selectMoodClickHandler);
     $('.submitBtn').click(moodSubmitClick).click(popupClickHandler);
     $("#locationSubmitBtn").click(locationSubmitBtn);
@@ -492,6 +492,7 @@ function applyClickHandlers()
         $('#drinkModal').modal('show');
     });
     $('#drinkModal').on('hidden.bs.modal', function () {
+        $("#google-icon").show();
         $('#google-icon').addClass('tada');
     });
     $('#mediaModal').on('hidden.bs.modal', function () {
@@ -499,6 +500,7 @@ function applyClickHandlers()
         mediaIDVideo = "";
         $('.yt-player-container').toggleClass('hidden_vid');
         removeMediaIDVideo();
+        $("#dratini-glass").show();
         $('#dratini-glass').addClass('tada');
     });
     $('#foodModal').on('hidden.bs.modal', function () {

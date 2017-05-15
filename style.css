@@ -16,7 +16,7 @@ body {
     position: fixed;
     height: 40px;
     display: none;
-    left: 30px;
+    right: 500px;
     top: 100px;
     font-family: happyCamper, Helvetica, sans-serif;
     color: dodgerblue;
@@ -73,11 +73,12 @@ body {
 
 .navbar {
     margin-bottom: 0;
+    color: dodgerblue;
 }
 
 .navbar-brand {
     font-family: happyCamper, Helvetica, sans-serif;
-    font-size: 65px;
+    font-size: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
